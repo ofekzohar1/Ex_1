@@ -141,7 +141,7 @@ void printFinalCentroids(Cluster *clustersArray) {
         for (j = 0; j < dimension; ++j) {
             if (j > 0)
                 printf("%c", COMMA_CHAR);
-            printf("%0.4lf", clustersArray[i].currCentroid[j]);
+            printf("%0.4f", clustersArray[i].currCentroid[j]);
         }
         printf("\n");
     }
