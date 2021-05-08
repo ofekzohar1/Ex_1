@@ -34,14 +34,14 @@ void calcDimAndNumOfVectors() {
     while (scanf("%s", line) != EOF) {
         (numOfVectors)++;
     }
-    rewind(stdin); // Move back to the beginning of the input file
+    rewind(stdin); /* Move back to the beginning of the input file */
 }
 
 double **initVectorsArray() {
     int i, j;
     char ch;
     double *matrix, **vectorsArray;
-    // Allocate memory for vectorsArray
+    /* Allocate memory for vectorsArray */
     assert(matrix = (double *) malloc(numOfVectors * (dimension + 1) * sizeof(double)));
     assert(vectorsArray = malloc(numOfVectors * sizeof(double *)));
 
@@ -57,7 +57,7 @@ double **initVectorsArray() {
 Cluster *initClusters(double **vectorsArray) {
     int i, j;
     Cluster *clustersArray;
-    // Allocate memory for clustersArray
+    /* Allocate memory for clustersArray */
     assert(clustersArray = (Cluster *) malloc(k * sizeof(Cluster)));
 
     for (i = 0; i < k; ++i) {
@@ -150,14 +150,14 @@ void printFinalCentroids(Cluster *clustersArray) {
 
 void freeMemoryVectorsClusters(double **vectorsArray, Cluster *clustersArray) {
     int i;
-    // Free clusters
+    /* Free clusters */
     for (i = 0; i < k; ++i) {
         free(clustersArray[i].currCentroid);
         free(clustersArray[i].prevCentroid);
     }
     free(clustersArray);
 
-    // Free vectors
+    /* Free vectors */
     free(&vectorsArray[0][0]);
     free(vectorsArray);
 }
@@ -179,7 +179,7 @@ int main(int argc, char *argv[]) {
     }
 
     calcDimAndNumOfVectors();
-    assert(k <= numOfVectors); // Number of clusters can't be more than the number of vectors
+    assert(k <= numOfVectors); /* Number of clusters can't be more than the number of vectors */
 
     vectorsArray = initVectorsArray();
     clustersArray = initClusters(vectorsArray);
@@ -188,7 +188,7 @@ int main(int argc, char *argv[]) {
         initCurrCentroidAndCounter(clustersArray);
         assginVectorsToClusters(vectorsArray, clustersArray);
         changes = recalcCentroids(clustersArray);
-        if (changes == 0) { // Centroids stay unchanged in the current iteration
+        if (changes == 0) { /* Centroids stay unchanged in the current iteration */
             break;
         }
     }
