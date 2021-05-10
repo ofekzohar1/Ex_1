@@ -16,20 +16,20 @@ static int k, numOfVectors, dimension;
 typedef struct {
     double *prevCentroid;
     double *currCentroid;
-    int counter;
+    int counter; /* Number of vectors (datapoints) in cluster */
 } Cluster;
 
-void calcDimAndNumOfVectors();
-double **initVectorsArray();
-Cluster *initClusters(double **vectorsArray);
-double vectorsNorm(const double *vec1, const double *vec2);
-int findMyCluster(double *vec, Cluster *clustersArray);
-void assignVectorsToClusters(double **vectorsArray, Cluster *clustersArray);
-int recalcCentroids(Cluster *clustersArray);
-void initCurrCentroidAndCounter(Cluster *clustersArray);
-void printFinalCentroids(Cluster *clustersArray);
-void freeMemoryVectorsClusters(double **vectorsArray, Cluster *clustersArray);
-void validateAndAssignInput(int argc, char **argv, int *maxIter);
+void calcDimAndNumOfVectors(); /* Calculate vectors dimension and number of total vectors */
+double **initVectorsArray(); /* Insert vectors into an array */
+Cluster *initClusters(double **vectorsArray); /* Initialize empty clusters array */
+double vectorsNorm(const double *vec1, const double *vec2); /* Calculate the norm between 2 vectors */
+int findMyCluster(double *vec, Cluster *clustersArray); /* Return the vector's closest cluster (in terms of norm) */
+void assignVectorsToClusters(double **vectorsArray, Cluster *clustersArray); /* For any vector assign to his closest cluster */
+int recalcCentroids(Cluster *clustersArray); /* Recalculate clusters' centroids, return number of changes */
+void initCurrCentroidAndCounter(Cluster *clustersArray); /* Set curr centroid to prev centroid and reset the counter */
+void printFinalCentroids(Cluster *clustersArray); /* Print clusters' final centroids */
+void freeMemoryVectorsClusters(double **vectorsArray, Cluster *clustersArray); /* Free the allocated memory */
+void validateAndAssignInput(int argc, char **argv, int *maxIter); /* Validate and assign k and max_iter input */
 
 int main(int argc, char *argv[]) {
     int maxIter, i, changes;
@@ -69,11 +69,11 @@ void calcDimAndNumOfVectors() {
 
     scanf("%s", line);
     for (c = line; *c != '\0'; c++) {
-        dimension += *c == COMMA_CHAR ? 1 : 0;
+        dimension += *c == COMMA_CHAR ? 1 : 0; /* Calc vectors' dimension */
     }
 
     while (scanf("%s", line) != EOF) {
-        (numOfVectors)++;
+        (numOfVectors)++; /* Calc number of vectors (datapoints) */
     }
     rewind(stdin); /* Move back to the beginning of the input file */
 }
@@ -89,7 +89,7 @@ double **initVectorsArray() {
     assert(vectorsArray != NULL);
 
     for (i = 0; i < numOfVectors; ++i) {
-        vectorsArray[i] = matrix + i * (dimension + 1);
+        vectorsArray[i] = matrix + i * (dimension + 1); /* Set VectorsArray to point to 2nd dimension array */
         for (j = 0; j < dimension; ++j) {
             scanf("%lf%c", &vectorsArray[i][j], &ch);
         }
@@ -108,11 +108,10 @@ Cluster *initClusters(double **vectorsArray) {
         clustersArray[i].prevCentroid = (double *) malloc(dimension * sizeof(double));
         clustersArray[i].currCentroid = (double *) malloc(dimension * sizeof(double));
         assert(clustersArray[i].prevCentroid != NULL && clustersArray[i].currCentroid != NULL);
-
         clustersArray[i].counter = 0;
 
         for (j = 0; j < dimension; ++j) {
-            clustersArray[i].currCentroid[j] = vectorsArray[i][j];
+            clustersArray[i].currCentroid[j] = vectorsArray[i][j]; /* Assign the first k vectors to their corresponding clusters */
         }
     }
     return clustersArray;
@@ -133,7 +132,7 @@ int findMyCluster(double *vec, Cluster *clustersArray) {
 
     myCluster = 0;
     minNorm = vectorsNorm(vec, clustersArray[0].prevCentroid);
-    for (j = 1; j < k; ++j) {
+    for (j = 1; j < k; ++j) { /* Find the min norm == closest cluster */
         norm = vectorsNorm(vec, clustersArray[j].prevCentroid);
         if (norm < minNorm) {
             myCluster = j;
@@ -149,11 +148,11 @@ void assignVectorsToClusters(double **vectorsArray, Cluster *clustersArray) {
     for (j = 0; j < numOfVectors; ++j) {
         vec = vectorsArray[j];
         myCluster = findMyCluster(vectorsArray[j], clustersArray);
-        vec[dimension] = myCluster;
+        vec[dimension] = myCluster; /* Set vector's cluster to his closest */
         for (i = 0; i < dimension; ++i) {
-            clustersArray[myCluster].currCentroid[i] += vec[i];
+            clustersArray[myCluster].currCentroid[i] += vec[i]; /* Summation of the vectors Components */
         }
-        clustersArray[myCluster].counter++;
+        clustersArray[myCluster].counter++; /* Count the number of vectors for each cluster */
     }
 }
 
@@ -163,8 +162,8 @@ int recalcCentroids(Cluster *clustersArray) {
     for (i = 0; i < k; ++i) {
         cluster = clustersArray[i];
         for (j = 0; j < dimension; ++j) {
-            cluster.currCentroid[j] /= cluster.counter;
-            changes += cluster.prevCentroid[j] != cluster.currCentroid[j] ? 1 : 0;
+            cluster.currCentroid[j] /= cluster.counter; /* Calc the mean value */
+            changes += cluster.prevCentroid[j] != cluster.currCentroid[j] ? 1 : 0; /* Count the number of changed centroids' components */
         }
     }
     return changes;
@@ -174,10 +173,10 @@ void initCurrCentroidAndCounter(Cluster *clustersArray) {
     int i, j;
     for (i = 0; i < k; ++i) {
         for (j = 0; j < dimension; ++j) {
-            clustersArray[i].prevCentroid[j] = clustersArray[i].currCentroid[j];
-            clustersArray[i].currCentroid[j] = 0;
+            clustersArray[i].prevCentroid[j] = clustersArray[i].currCentroid[j]; /* Set prev centroid to curr centroid */
+            clustersArray[i].currCentroid[j] = 0; /* Reset curr centroid */
         }
-        clustersArray[i].counter = 0;
+        clustersArray[i].counter = 0; /* Reset counter */
     }
 }
 
@@ -187,7 +186,7 @@ void printFinalCentroids(Cluster *clustersArray) {
         for (j = 0; j < dimension; ++j) {
             if (j > 0)
                 printf("%c", COMMA_CHAR);
-            printf("%0.4f", clustersArray[i].currCentroid[j]);
+            printf("%0.4f", clustersArray[i].currCentroid[j]); /* Print with an accuracy of 4 digits after the dot */
         }
         printf("\n");
     }
