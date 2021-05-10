@@ -3,7 +3,6 @@
 #include <assert.h>
 
 #define SQ(x) ((x)*(x))
-#define ABS(x) ((x)>0) ? (x) : -1 * (x)
 
 #define K_ARGUMENT 2
 #define MAX_ITER_ARGUMENT 3
@@ -11,7 +10,6 @@
 #define MAX_CHAR_AT_ONE_LINE 1000
 #define COMMA_CHAR ','
 #define END_OF_STRING '\0'
-#define IRRELEVANT_DIFF 0.00005
 
 static int k, numOfVectors, dimension;
 
@@ -20,6 +18,48 @@ typedef struct {
     double *currCentroid;
     int counter;
 } Cluster;
+
+void calcDimAndNumOfVectors();
+double **initVectorsArray();
+Cluster *initClusters(double **vectorsArray);
+double vectorsNorm(const double *vec1, const double *vec2);
+int findMyCluster(double *vec, Cluster *clustersArray);
+void assignVectorsToClusters(double **vectorsArray, Cluster *clustersArray);
+int recalcCentroids(Cluster *clustersArray);
+void initCurrCentroidAndCounter(Cluster *clustersArray);
+void printFinalCentroids(Cluster *clustersArray);
+void freeMemoryVectorsClusters(double **vectorsArray, Cluster *clustersArray);
+void validateAndAssignInput(int argc, char **argv, int *maxIter);
+
+int main(int argc, char *argv[]) {
+    int maxIter, i, changes;
+    double **vectorsArray;
+    Cluster *clustersArray;
+
+    validateAndAssignInput(argc, argv, &maxIter);
+    calcDimAndNumOfVectors();
+    if (k >= numOfVectors) { /* Number of clusters can't be more than the number of vectors */
+        printf("Number fo clusters (%d) can't be more than the number of datapoints (%d).", k, numOfVectors);
+        return 0;
+    }
+
+    /* Initialize vectors (datapoints) and clusters arrays */
+    vectorsArray = initVectorsArray();
+    clustersArray = initClusters(vectorsArray);
+
+    for (i = 0; i < maxIter; ++i) {
+        initCurrCentroidAndCounter(clustersArray); /* Update curr centroid to prev centroid and reset the counter */
+        assignVectorsToClusters(vectorsArray, clustersArray);
+        changes = recalcCentroids(clustersArray); /* Calculate new centroids */
+        if (changes == 0) { /* Centroids stay unchanged in the current iteration */
+            break;
+        }
+    }
+
+    printFinalCentroids(clustersArray);
+    freeMemoryVectorsClusters(vectorsArray, clustersArray);
+    return 0;
+}
 
 void calcDimAndNumOfVectors() {
     char line[MAX_CHAR_AT_ONE_LINE];
@@ -124,7 +164,7 @@ int recalcCentroids(Cluster *clustersArray) {
         cluster = clustersArray[i];
         for (j = 0; j < dimension; ++j) {
             cluster.currCentroid[j] /= cluster.counter;
-            changes += (ABS(cluster.prevCentroid[j] - cluster.currCentroid[j]) > IRRELEVANT_DIFF) ? 1 : 0;
+            changes += cluster.prevCentroid[j] != cluster.currCentroid[j] ? 1 : 0;
         }
     }
     return changes;
@@ -151,7 +191,6 @@ void printFinalCentroids(Cluster *clustersArray) {
         }
         printf("\n");
     }
-    printf("\n");
 }
 
 void freeMemoryVectorsClusters(double **vectorsArray, Cluster *clustersArray) {
@@ -188,34 +227,4 @@ void validateAndAssignInput(int argc, char **argv, int *maxIter) {
     } else {
         *maxIter = DEFAULT_NUM_OF_ITERS;
     }
-}
-
-int main(int argc, char *argv[]) {
-    int maxIter, i, changes;
-    double **vectorsArray;
-    Cluster *clustersArray;
-
-    validateAndAssignInput(argc, argv, &maxIter);
-    calcDimAndNumOfVectors();
-    if (k <= numOfVectors) { /* Number of clusters can't be more than the number of vectors */
-        printf("Number fo clusters (%d) can't be more than the number of datapoints (%d).", k, numOfVectors);
-        return 0;
-    }
-
-    /* Initialize vectors (datapoints) and clusters arrays */
-    vectorsArray = initVectorsArray();
-    clustersArray = initClusters(vectorsArray);
-
-    for (i = 0; i < maxIter; ++i) {
-        initCurrCentroidAndCounter(clustersArray); /* Update curr centroid to prev centroid and reset the counter */
-        assignVectorsToClusters(vectorsArray, clustersArray);
-        changes = recalcCentroids(clustersArray); /* Calculate new centroids */
-        if (changes == 0) { /* Centroids stay unchanged in the current iteration */
-            break;
-        }
-    }
-
-    printFinalCentroids(clustersArray);
-    freeMemoryVectorsClusters(vectorsArray, clustersArray);
-    return 0;
 }
