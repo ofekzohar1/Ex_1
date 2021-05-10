@@ -10,6 +10,7 @@
 #define DEFAULT_NUM_OF_ITERS 200
 #define MAX_CHAR_AT_ONE_LINE 1000
 #define COMMA_CHAR ','
+#define END_OF_STRING '\0'
 #define IRRELEVANT_DIFF 0.00005
 
 static int k, numOfVectors, dimension;
@@ -42,8 +43,10 @@ double **initVectorsArray() {
     char ch;
     double *matrix, **vectorsArray;
     /* Allocate memory for vectorsArray */
-    assert(matrix = (double *) malloc(numOfVectors * (dimension + 1) * sizeof(double)));
-    assert(vectorsArray = malloc(numOfVectors * sizeof(double *)));
+    matrix = (double *) malloc(numOfVectors * (dimension + 1) * sizeof(double));
+    assert(matrix != NULL);
+    vectorsArray = malloc(numOfVectors * sizeof(double *));
+    assert(vectorsArray != NULL);
 
     for (i = 0; i < numOfVectors; ++i) {
         vectorsArray[i] = matrix + i * (dimension + 1);
@@ -58,11 +61,14 @@ Cluster *initClusters(double **vectorsArray) {
     int i, j;
     Cluster *clustersArray;
     /* Allocate memory for clustersArray */
-    assert(clustersArray = (Cluster *) malloc(k * sizeof(Cluster)));
+    clustersArray = (Cluster *) malloc(k * sizeof(Cluster));
+    assert(clustersArray != NULL);
 
     for (i = 0; i < k; ++i) {
-        assert(clustersArray[i].prevCentroid = (double *) malloc(dimension * sizeof(double)));
-        assert(clustersArray[i].currCentroid = (double *) malloc(dimension * sizeof(double)));
+        clustersArray[i].prevCentroid = (double *) malloc(dimension * sizeof(double));
+        clustersArray[i].currCentroid = (double *) malloc(dimension * sizeof(double));
+        assert(clustersArray[i].prevCentroid != NULL && clustersArray[i].currCentroid != NULL);
+
         clustersArray[i].counter = 0;
 
         for (j = 0; j < dimension; ++j) {
@@ -97,7 +103,7 @@ int findMyCluster(double *vec, Cluster *clustersArray) {
     return myCluster;
 }
 
-void assginVectorsToClusters(double **vectorsArray, Cluster *clustersArray) {
+void assignVectorsToClusters(double **vectorsArray, Cluster *clustersArray) {
     int j, i, myCluster;
     double *vec;
     for (j = 0; j < numOfVectors; ++j) {
@@ -158,8 +164,30 @@ void freeMemoryVectorsClusters(double **vectorsArray, Cluster *clustersArray) {
     free(clustersArray);
 
     /* Free vectors */
-    free(&vectorsArray[0][0]);
+    free(*vectorsArray);
     free(vectorsArray);
+}
+
+void validateAndAssignInput(int argc, char **argv, int *maxIter) {
+    char *nextCh;
+    if (argc < K_ARGUMENT) {
+        printf("The program needs at least one argument.");
+        exit(0);
+    }
+    k = strtol(argv[K_ARGUMENT - 1], &nextCh, 10);
+    if (k < 1 || *nextCh != END_OF_STRING) { /* Contain not only digits or integer less than 1 */
+        printf("K argument must be an integer number greater than 0.");
+        exit(0);
+    }
+    if (argc >= MAX_ITER_ARGUMENT) {
+        *maxIter = strtol(argv[MAX_ITER_ARGUMENT - 1], &nextCh, 10);
+        if (*maxIter < 1 || *nextCh != END_OF_STRING) { /* Contain not only digits or integer less than 1 */
+            printf("Max iteration argument must be an integer number greater than 0.");
+            exit(0);
+        }
+    } else {
+        *maxIter = DEFAULT_NUM_OF_ITERS;
+    }
 }
 
 int main(int argc, char *argv[]) {
@@ -167,27 +195,21 @@ int main(int argc, char *argv[]) {
     double **vectorsArray;
     Cluster *clustersArray;
 
-    if (argc < K_ARGUMENT) {
-        printf("The program needs at least one argument");
+    validateAndAssignInput(argc, argv, &maxIter);
+    calcDimAndNumOfVectors();
+    if (k <= numOfVectors) { /* Number of clusters can't be more than the number of vectors */
+        printf("Number fo clusters (%d) can't be more than the number of datapoints (%d).", k, numOfVectors);
         return 0;
     }
-    assert ((k = atoi(argv[K_ARGUMENT - 1])) > 0);
-    if (argc >= MAX_ITER_ARGUMENT) {
-        assert ((maxIter = atoi(argv[MAX_ITER_ARGUMENT - 1])) > 0);
-    } else {
-        maxIter = DEFAULT_NUM_OF_ITERS;
-    }
 
-    calcDimAndNumOfVectors();
-    assert(k <= numOfVectors); /* Number of clusters can't be more than the number of vectors */
-
+    /* Initialize vectors (datapoints) and clusters arrays */
     vectorsArray = initVectorsArray();
     clustersArray = initClusters(vectorsArray);
 
     for (i = 0; i < maxIter; ++i) {
-        initCurrCentroidAndCounter(clustersArray);
-        assginVectorsToClusters(vectorsArray, clustersArray);
-        changes = recalcCentroids(clustersArray);
+        initCurrCentroidAndCounter(clustersArray); /* Update curr centroid to prev centroid and reset the counter */
+        assignVectorsToClusters(vectorsArray, clustersArray);
+        changes = recalcCentroids(clustersArray); /* Calculate new centroids */
         if (changes == 0) { /* Centroids stay unchanged in the current iteration */
             break;
         }
