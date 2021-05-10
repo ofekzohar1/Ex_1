@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
     validateAndAssignInput(argc, argv, &maxIter);
     calcDimAndNumOfVectors();
     if (k >= numOfVectors) { /* Number of clusters can't be more than the number of vectors */
-        printf("Number fo clusters (%d) can't be more than the number of datapoints (%d).", k, numOfVectors);
+        printf("Number fo clusters (%d) can't be more than the number of datapoints (%d).\n", k, numOfVectors);
         return 0;
     }
 
@@ -209,18 +209,18 @@ void freeMemoryVectorsClusters(double **vectorsArray, Cluster *clustersArray) {
 void validateAndAssignInput(int argc, char **argv, int *maxIter) {
     char *nextCh;
     if (argc < K_ARGUMENT) {
-        printf("The program needs at least one argument.");
+        printf("The program needs at least one argument.\n");
         exit(0);
     }
     k = strtol(argv[K_ARGUMENT - 1], &nextCh, 10);
     if (k < 1 || *nextCh != END_OF_STRING) { /* Contain not only digits or integer less than 1 */
-        printf("K argument must be an integer number greater than 0.");
+        printf("K argument must be an integer number greater than 0.\n");
         exit(0);
     }
     if (argc >= MAX_ITER_ARGUMENT) {
         *maxIter = strtol(argv[MAX_ITER_ARGUMENT - 1], &nextCh, 10);
         if (*maxIter < 1 || *nextCh != END_OF_STRING) { /* Contain not only digits or integer less than 1 */
-            printf("Max iteration argument must be an integer number greater than 0.");
+            printf("Max iteration argument must be an integer number greater than 0.\n");
             exit(0);
         }
     } else {
