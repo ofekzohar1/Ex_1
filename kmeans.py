@@ -51,7 +51,8 @@ def build_list_of_vectors(k):
             break
     amount_of_vectors = len(list_of_vectors)
     if k >= amount_of_vectors:
-        raise Exception(f" K can't be bigger than the number of vectors, K={k},number of vectors ={amount_of_vectors}")
+        print(f"K must be smaller than the number of vectors: K = {k}, number of vectors = {amount_of_vectors}")
+        exit()  # End program k >= n
     return list_of_vectors
 
 
@@ -102,16 +103,19 @@ def print_centrals(list_of_clusters):
 
 def validate_and_assign_input_user():
     if len(sys.argv) < MIN_ARGUMENTS:
-        raise Exception(f"Amount of arguments should be more than 1, amount of arguments={len(sys.argv)}")
+        print(f"Amount of arguments should be more than 1: amount of arguments = {len(sys.argv)}")
+        exit()  # End program, min arguments
     if (not sys.argv[1].isdigit()) or int(sys.argv[1]) < 1:
-        raise Exception(f"K input has to be a number and should exceed 0, k={sys.argv[1]}")
+        print(f"K input has to be a number and should exceed 0: k = {sys.argv[1]}")
+        exit()  # End program, not valid k
     k = int(sys.argv[1])
     max_iter = DEFAULT_ITER
-    if len(sys.argv) > 3:
+    if len(sys.argv) > MIN_ARGUMENTS:
         if (sys.argv[2].isdigit()) and int(sys.argv[2]) > 0:
             max_iter = sys.argv[2]
         else:
-            raise Exception(f"max_iter input has to be a number and should exceed 0, max_iter={sys.argv[2]}")
+            print(f"max_iter input has to be a number and should exceed 0: max_iter = {sys.argv[2]}")
+            exit()  # End program, not valid max_iter
     return k, max_iter
 
 
