@@ -103,7 +103,7 @@ def print_centrals(list_of_clusters):
 
 def validate_and_assign_input_user():
     if len(sys.argv) < MIN_ARGUMENTS:
-        print(f"Amount of arguments should be more than 1: amount of arguments = {len(sys.argv)}")
+        print(f"Amount of arguments should be at least {MIN_ARGUMENTS - 1}: amount of arguments = {len(sys.argv) - 1}")
         exit()  # End program, min arguments
     if (not sys.argv[1].isdigit()) or int(sys.argv[1]) < 1:
         print(f"K input has to be a number and should exceed 0: k = {sys.argv[1]}")
